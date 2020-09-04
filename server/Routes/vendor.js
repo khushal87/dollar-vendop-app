@@ -10,6 +10,7 @@ Router.get('/get-vendors-by-pan/:id', vendorController.getVendorsByPANCard);
 Router.post('/get-vendors-by-gst-pan', vendorController.getVendorsByPANAndGST);
 Router.post('/copy-vendors-by-gst-pan-id/:id', vendorController.copyDataToMultipleVendors);
 Router.get('/check-vendors-confirmed-or-not', vendorController.gstVerifiedOrNot);
+Router.get('/check-pan-status/:id', vendorController.checkIfPanStatusTrue);
 Router.post('/create-vendor', [
     body('pan_no').trim().notEmpty().withMessage("PAN number cannot be empty")
 ], vendorController.createVendor);

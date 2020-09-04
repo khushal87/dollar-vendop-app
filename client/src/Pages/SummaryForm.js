@@ -6,6 +6,7 @@ import moment from 'moment';
 import CustomButton from '../Components/Button';
 import { QRCode } from 'react-qr-svg';
 import { apiUrl } from '../config';
+import { Dimensions } from '../Utils/sitedimension';
 
 const { Text } = Typography;
 
@@ -13,6 +14,7 @@ function SummaryForm(props) {
     const [vendor, setVendor] = useState({});
     const [print, setPrint] = useState(false);
     const { vendorData } = useVendorContext();
+    const { width } = Dimensions.useWindowDimensions();
 
     const onError = () => {
         return message.error("Please check your internet connection");
@@ -70,7 +72,7 @@ function SummaryForm(props) {
         heading: {
             fontSize: 18,
             fontWeight: "bold",
-            marginBottom: 20
+            marginBottom: 10
         }
     }
 
@@ -89,7 +91,7 @@ function SummaryForm(props) {
                 <Text>{moment(vendor.updatedAt).format("DD-MM-YYYY hh:mm A")}</Text>
                 <QRCode
                     level="Q"
-                    style={{ width: 130, position: "absolute", right: 10, marginTop: 100 }}
+                    style={{ width: 120, position: "absolute", right: width > 800 ? "30%" : 10, marginTop: 100 }}
                     value={`${apiUrl}/summary-form/${props.match.params.id}`}
                 />
                 <br />
@@ -113,7 +115,6 @@ function SummaryForm(props) {
                         <Text><Text style={{ fontWeight: "bold" }}>MSME Reg. No.</Text> - {vendor.msme_reg_no}</Text>
                         <Text><Text style={{ fontWeight: "bold" }}>MSME Valid From</Text> - {moment(vendor.msme_valid_from).format("DD-MM-YYYY")}</Text>
                     </> : null}
-                <br />
                 <Text><Text style={{ fontWeight: "bold" }}>Address Line 1</Text> - {vendor.address_line1}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Address Line 2</Text> - {vendor.address_line2}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Address Line 3</Text> - {vendor.address_line3}</Text>
@@ -125,7 +126,6 @@ function SummaryForm(props) {
                 <Text><Text style={{ fontWeight: "bold" }}>Account Head Name</Text> - {vendor.accounts_head_name}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Account Head Phone</Text> - {vendor.accounts_head_mobile}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Account Head Email</Text> - {vendor.accounts_head_email}</Text>
-                <br />
                 <Text><Text style={{ fontWeight: "bold" }}>Bank Name</Text> - {vendor.bank_name}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Bank Account Number</Text> - {vendor.bank_account_no}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Account Type</Text> - {vendor.bank_account_type}</Text>
@@ -134,7 +134,7 @@ function SummaryForm(props) {
                 <Text style={styles.heading}>Documents Provided</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>PAN</Text> - {vendor.pan_attachment && vendor.pan_attachment.substr(7)}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>GST</Text> - {vendor.gst_attachment && vendor.gst_attachment.substr(7)}</Text>
-                <Text><Text style={{ fontWeight: "bold" }}>MSME</Text> - {vendor.msme_attachment && vendor.msme_attachment.substr(7)}</Text>
+                {vendor.is_msme === "Y" ? <Text><Text style={{ fontWeight: "bold" }}>MSME</Text> - {vendor.msme_attachment && vendor.msme_attachment.substr(7)}</Text> : null}
                 <Text><Text style={{ fontWeight: "bold" }}>Bank</Text> - {vendor.bank_cancelled_cheque && vendor.bank_cancelled_cheque.substr(7)}</Text>
                 <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
                     <CustomButton

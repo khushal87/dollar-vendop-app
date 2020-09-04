@@ -4,12 +4,17 @@ import CustomButton from '../Components/Button';
 import Prompt from '../Components/Prompt';
 import Axios from 'axios';
 import { message } from 'antd';
+import ViewVerifyScreen from './ViewVerifyScreen';
 
 
 function Homepage(props) {
     const [visible, setVisible] = useState(false);
     const [pan_no, setPanNo] = useState("");
     const [no_pan_listed, setNoPanListed] = useState(false);
+    const [data, setData] = useState([]);
+    const [statusChecked, setStatusChecked] = useState(false);
+    const [phone_numbers, setPhoneNumbers] = useState([]);
+
     const styles = {
         view: {
             display: 'flex',
@@ -42,6 +47,7 @@ function Homepage(props) {
                 }
                 else {
                     setVisible(true);
+                    setData(res.data.vendors);
                 }
             }).catch((err) => {
                 onError();
@@ -54,9 +60,24 @@ function Homepage(props) {
 
     const handleYes = () => {
         if (no_pan_listed)
-            return props.history.push('/request-pan-info');
-        else
-            return props.history.push(`/gst-listing/${pan_no}`);
+            return props.history.push(`/request-pan-info/${pan_no}`);
+        else {
+            let check = true;
+            let numbers = [];
+            data.map(item => {
+                if (!item.status) {
+                    check = false;
+                }
+                numbers.push({ value: item.phone_number, data: item.phone_number.substring(0, 4) + "XXXXXX" + item.phone_number.substring(10, 13) });
+            })
+            if (check === true) {
+                setPhoneNumbers(numbers);
+                setStatusChecked(true);
+            }
+            else {
+                return props.history.push(`/gst-listing/${pan_no}`);
+            }
+        }
     }
 
     const disabledHandler = () => {
@@ -76,9 +97,10 @@ function Homepage(props) {
                 title="PAN Number"
                 autoFocus={true}
                 placeholder="Enter your 10 digit PAN number" />
+            {statusChecked && <ViewVerifyScreen numbers={phone_numbers} {...props} pan_no={pan_no} />}
             <CustomButton
                 title={"Submit"}
-                disabled={!disabledHandler()}
+                disabled={!disabledHandler() || statusChecked}
                 onClick={onSubmitHandler} />
             <Prompt
                 title="Continue"

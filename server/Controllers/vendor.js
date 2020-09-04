@@ -154,7 +154,6 @@ exports.createVendor = (req, res, next) => {
         contact_person_mobile, contact_person_email, contact_person_name,
     } = req.body;
     const { pan_attachment, msme_attachment, gst_attachment, bank_cancelled_cheque } = req.files;
-    // console.log(req.files)
 
     const vendor = new Vendor({
         name,
@@ -467,6 +466,32 @@ exports.copyVendors = (req, res, next) => {
                 .then((result) => {
                     res.status(200).send({ message: "Vendor copied successfully!", vendor: result });
                 })
+        })
+        .catch(error => {
+            if (!error.statusCode) {
+                error.statusCode = 500;
+            }
+            next(error);
+        })
+}
+
+exports.checkIfPanStatusTrue = (req, res, next) => {
+    const pan_no = req.params.id;
+    console.log(pan_no)
+    Vendor.find({ pan_no: pan_no })
+        .then((result) => {
+            if (result.length === 0) {
+                res.status(400).send({ data: "Not a valid PAN" });
+            }
+            else {
+                let check = true;
+                result.map((vendor) => {
+                    if (vendor.status === false) {
+                        check = false;
+                    }
+                })
+                res.status(200).send({ data: check });
+            }
         })
         .catch(error => {
             if (!error.statusCode) {

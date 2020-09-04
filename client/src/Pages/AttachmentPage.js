@@ -19,6 +19,7 @@ function AttachmentPage(props) {
     const [msme_reg_no, setMSMERegNo] = useState("");
     const [is_msme, setIsMSME] = useState("N");
     const [loading, setLoading] = useState(false);
+    const [resultMessage, setResultMessage] = useState("");
 
     const { vendorData, setVendorData } = useVendorContext();
 
@@ -85,7 +86,11 @@ function AttachmentPage(props) {
     }
 
     const onError = () => {
-        message.error("Something went wrong");
+        message.error("Something went wrong!");
+    }
+
+    const onFileMessage = () => {
+        message.error("File size too large");
     }
 
     const onSubmitHandler = () => {
@@ -120,9 +125,17 @@ function AttachmentPage(props) {
                 })
             })
             .catch((error) => {
-                console.log(error);
+                if (error.response) {
+                    if (error.response.data.message === "File too large")
+                        onFileMessage();
+                    else {
+                        onError();
+                    }
+                }
+                else {
+                    onError();
+                }
                 setLoading(false);
-                onError();
             })
     }
 
@@ -166,51 +179,52 @@ function AttachmentPage(props) {
                 onBack={() => { props.history.goBack() }}
                 title="Documents Required"
             />
-            <div style={styles.view}>
-                <Text type="warning">Supported File formats(JPG, PNG, PDF)</Text>
-                <br />
-
-                <Text style={styles.title}>PAN Attachment<Text type="danger">*</Text></Text>
-                <label for="pan" style={styles.label}>
-                    <UploadOutlined /> Click to Upload
+            <br />
+            <form method="post" encType="multipart/form-data">
+                <div style={styles.view}>
+                    <Text type="warning">Supported File formats(JPG, PNG, PDF)</Text>
+                    <Text style={styles.title}>PAN Attachment<Text type="danger">*</Text></Text>
+                    <label for="pan" style={styles.label}>
+                        <UploadOutlined /> Click to Upload
                 </label>
-                <Text>{pan_attachment && pan_attachment.name}</Text>
-                <input hidden={true} id="pan" title="Attach" type="file" onChange={fileChangedHandlerPAN} />
+                    <Text>{pan_attachment && pan_attachment.name}</Text>
+                    <input hidden={true} id="pan" title="Attach" type="file" onChange={fileChangedHandlerPAN} />
 
-                <Text style={styles.title}>GST Attachment<Text type="danger">*</Text></Text>
-                <label for="gst" style={styles.label}>
-                    <UploadOutlined /> Click to Upload
+                    <Text style={styles.title}>GST Attachment<Text type="danger">*</Text></Text>
+                    <label for="gst" style={styles.label}>
+                        <UploadOutlined /> Click to Upload
                 </label>
-                <Text>{gst_attachment && gst_attachment.name}</Text>
-                <input hidden={true} id="gst" title="Attach" type="file" onChange={fileChangedHandlerGST} />
+                    <Text>{gst_attachment && gst_attachment.name}</Text>
+                    <input hidden={true} id="gst" title="Attach" type="file" onChange={fileChangedHandlerGST} />
 
-                {is_msme === "Y" ?
-                    <>
-                        <Text style={styles.title}>MSME Attachment<Text type="danger">*</Text></Text>
-                        <label for="msme" style={styles.label}>
-                            <UploadOutlined /> Click to Upload
+                    {is_msme === "Y" ?
+                        <>
+                            <Text style={styles.title}>MSME Attachment<Text type="danger">*</Text></Text>
+                            <label for="msme" style={styles.label}>
+                                <UploadOutlined /> Click to Upload
                         </label>
-                    </> : null}
-                <input hidden={true} id="msme" title="Attach" type="file" onChange={fileChangedHandlerMSME} />
-                <Text>{msme_attachment && msme_attachment.name}</Text>
+                        </> : null}
+                    <input hidden={true} id="msme" title="Attach" type="file" onChange={fileChangedHandlerMSME} />
+                    <Text>{msme_attachment && msme_attachment.name}</Text>
 
 
-                <Text style={styles.title}>Bank Cancelled cheque<Text type="danger">*</Text></Text>
-                <label for="bank" style={styles.label}>
-                    <UploadOutlined /> Click to Upload
+                    <Text style={styles.title}>Bank Cancelled cheque<Text type="danger">*</Text></Text>
+                    <label for="bank" style={styles.label}>
+                        <UploadOutlined /> Click to Upload
                 </label>
-                <input hidden={true} id="bank" title="Attach" type="file" onChange={fileChangedHandlerBank} />
-                <Text>{bank_cancelled_cheque && bank_cancelled_cheque.name}</Text>
+                    <input hidden={true} id="bank" title="Attach" type="file" onChange={fileChangedHandlerBank} />
+                    <Text>{bank_cancelled_cheque && bank_cancelled_cheque.name}</Text>
 
-                <CustomButton
-                    title={"Submit"}
-                    disabled={!disabledHandler()}
-                    onClick={onSubmitHandler}
-                />
-                {loading && <div style={{ textAlign: "center", marginTop: 15 }}>
-                    <Spin size="large" />
-                </div>}
-            </div>
+                    <CustomButton
+                        title={"Submit"}
+                        disabled={!disabledHandler()}
+                        onClick={onSubmitHandler}
+                    />
+                    {loading && <div style={{ textAlign: "center", marginTop: 15 }}>
+                        <Spin size="large" />
+                    </div>}
+                </div>
+            </form>
         </>
     )
 }

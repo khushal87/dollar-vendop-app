@@ -28,21 +28,22 @@ const fileStorage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: (req, file, cb) => {
-        if (file.fieldname === "pan_attachment") {
-            cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.pan_no + "_" + file.originalname);
-        }
-        else if (file.fieldname === "gst_attachment") {
-            cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.gst_no + "_" + file.originalname);
-        }
-        else if (file.fieldname === "msme_attachment") {
-            cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.msme_reg_no + "_" + file.originalname);
-        }
-        else if (file.fieldname === "bank_cancelled_cheque") {
-            cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + "cheque_" + file.originalname);
-        }
-        else
-            cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + file.originalname);
-    }
+        // if (file.fieldname === "pan_attachment") {
+        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.pan_no + "_" + file.originalname);
+        // }
+        // else if (file.fieldname === "gst_attachment") {
+        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.gst_no + "_" + file.originalname);
+        // }
+        // else if (file.fieldname === "msme_attachment") {
+        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.msme_reg_no + "_" + file.originalname);
+        // }
+        // else if (file.fieldname === "bank_cancelled_cheque") {
+        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + "cheque_" + file.originalname);
+        // }
+        // else
+        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + file.originalname);
+        cb(null, file.originalname);
+    },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -63,7 +64,7 @@ const fileFilter = (req, file, cb) => {
 app.use(express.static(path.join(__dirname, 'Public')));
 app.use(bodyParser.urlencoded({ extended: false }));    //x-www-form-urlencoded
 app.use(bodyParser.json());         //application/json
-app.use(multer({ storage: fileStorage, fileFilter: fileFilter })
+app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fileSize: 15728640 } })
     .fields([
         { name: "pan_attachment", maxCount: 1 },
         { name: "gst_attachment", maxCount: 1 },        //need to be done 5

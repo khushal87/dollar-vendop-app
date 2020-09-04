@@ -1,8 +1,10 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 
 import {
     Typography,
-    message
+    message,
+    Spin,
+    PageHeader
 } from 'antd';
 import TextInput from '../Components/TextInput';
 import CustomButton from '../Components/Button';
@@ -21,7 +23,9 @@ const RequestPanInfo = (props) => {
     const [visible, setVisible] = useState(false);
     const [messageText, setMessageText] = useState("");
     const [noPanId, setNoPanId] = useState("");
-
+    const [exists, setExists] = useState(false);
+    const [loader, setLoader] = useState(false);
+    const [mainLoading, setMainLoading] = useState(false);
 
     const onError = () => {
         message.error({
@@ -33,7 +37,19 @@ const RequestPanInfo = (props) => {
         });
     };
 
+    useEffect(() => {
+        setMainLoading(true);
+        Axios.get(`/nopandata/check-new-pan-or-not/${props.match.params.id}`)
+            .then((result) => {
+                setExists(result.data.data);
+                setMainLoading(false);
+            }).catch(err => {
+                setMainLoading(false);
+            })
+    }, [])
+
     const onSubmitHandler = () => {
+        setLoader(true);
         const params = {
             name, email, phone, pan_no
         }
@@ -46,11 +62,15 @@ const RequestPanInfo = (props) => {
                                 setVisible(true);
                                 setNoPanId(result.data.data._id);
                                 setMessageText("Our representative will contact you soon. Please note the Id mentioned above");
+                                setLoader(false);
                             }
+                        }).catch((err) => {
+                            setLoader(false);
                         });
                 }
                 else {
                     onError();
+                    setLoader(false);
                 }
             })
             .catch((err) => {
@@ -82,7 +102,7 @@ const RequestPanInfo = (props) => {
             alignItems: 'center',
             justifyContent: 'center',
             color: 'white',
-            minHeight: '100vh'
+            minHeight: '90vh'
         },
         disclaimer: {
             textAlign: "center",
@@ -97,52 +117,75 @@ const RequestPanInfo = (props) => {
         }
     }
 
+
     return (
-        <div style={styles.view}>
-            <Text style={styles.disclaimer}>
-                Your PAN is not found registered with Dollar Industries Ltd., please send an email at<br />
-                <a href="mailto:test@exmaple.com">test@example.com</a><br />
+        <>
+            <PageHeader
+                className="site-page-header"
+                onBack={() => { props.history.goBack() }}
+                title="Unregistered Vendor"
+            />
+            {mainLoading ? <div style={{ marginTop: 20, textAlign: "center" }}>
+                <Spin size={20} />
+            </div> :
+                <div style={styles.view}>
+                    {!exists ?
+                        <>
+                            <Text style={styles.disclaimer}>
+                                Your PAN is not found registered with Dollar Industries Ltd., please send an email at<br />
+                                <a href="mailto:dollarphoneverify@gmail.com">
+                                    dollarphoneverify@gmail.com
+                </a><br />
                 with your id after submitting the details required below.
             </Text>
-            <Text style={styles.head}>
-                Fill the details below.
-            </Text>
-            <TextInput
-                title="Organization Name*"
-                value={name}
-                onChange={(text) => { setName(text) }}
-                autoFocus={true}
-                placeholder="Enter your Name" />
-            <TextInput
-                title="PAN Number*"
-                value={pan_no}
-                onChange={(text) => { setPanNo(text.toUpperCase()) }}
-                placeholder="Enter 10 digit PAN Number" />
-            <TextInput
-                title="Mobile*"
-                value={phone}
-                onChange={(text) => { setPhone(text) }}
-                placeholder="Enter 10 digit Mobile Number" />
-            <TextInput
-                title="Email*"
-                value={email}
-                onChange={(text) => { setEmail(text) }}
-                placeholder="Enter your Email" />
-            <CustomButton
-                disabled={!disabledHandler()}
-                title={"Submit"}
-                onClick={onSubmitHandler} />
-            {/* <Text type="danger">*We will contact you in 2 weeks</Text> */}
-            <Prompt
-                title={`Id - ${noPanId}`}
-                modalTextMain={messageText}
-                visible={visible}
-                yesTitle="Please wait while we check.."
-                handleClose={handleClose}
-                handleYes={handleYes}
-                handleNo={handleNo}
-            />
-        </div>
+
+                            <Text style={styles.head}>
+                                Fill the details below.
+                    </Text>
+                            <TextInput
+                                title="Organization Name*"
+                                value={name}
+                                onChange={(text) => { setName(text) }}
+                                autoFocus={true}
+                                placeholder="Enter your Name" />
+                            <TextInput
+                                title="PAN Number*"
+                                value={pan_no}
+                                onChange={(text) => { setPanNo(text.toUpperCase()) }}
+                                placeholder="Enter 10 digit PAN Number" />
+                            <TextInput
+                                title="Mobile*"
+                                value={phone}
+                                onChange={(text) => { setPhone(text) }}
+                                placeholder="Enter 10 digit Mobile Number" />
+                            <TextInput
+                                title="Email*"
+                                value={email}
+                                onChange={(text) => { setEmail(text) }}
+                                placeholder="Enter your Email" />
+                            <CustomButton
+                                disabled={!disabledHandler()}
+                                title={"Submit"}
+                                onClick={onSubmitHandler} />
+                            {loader &&
+                                <div style={{ textAlign: "center" }}>
+                                    <Spin size="large" />
+                                </div>}
+                            {/* <Text type="danger">*We will contact you in 2 weeks</Text> */}
+                            <Prompt
+                                title={`Id - ${noPanId}`}
+                                modalTextMain={messageText}
+                                visible={visible}
+                                yesTitle="Please wait while we check.."
+                                handleClose={handleClose}
+                                handleYes={handleYes}
+                                handleNo={handleNo}
+                            />
+                        </> : <Text style={{ textAlign: "center", marginLeft: 20, marginRight: 20 }}>
+                            Thank You! Your form is already submitted. If you have provided correct email address and phone number you will be contacted soon.
+                </Text>}
+                </div>}
+        </>
     );
 };
 

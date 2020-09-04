@@ -36,3 +36,22 @@ exports.createNoPanData = (req, res, next) => {
             next(error);
         });
 }
+
+exports.checkNoPanOrNot = (req, res, next) => {
+    const pan_no = req.params.id;
+    NoPanData.find({ pan_no: pan_no })
+        .then((result) => {
+            if (result.length > 0) {
+                res.status(200).json({ message: "Person already submitted", data: true });
+            }
+            else {
+                res.status(200).json({ message: "No such person", data: false });
+            }
+        })
+        .catch((error) => {
+            if (!error.statusCode) {
+                error.statusCode = 500;
+            }
+            next(error);
+        });
+}

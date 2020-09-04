@@ -1,11 +1,12 @@
 import React, { Component, memo } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
-import { Input, Typography, PageHeader, Spin } from 'antd';
+import { Input, Typography, PageHeader, Spin, Select } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import CustomButton from '../Components/Button';
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const styles = {
     view: {
@@ -14,19 +15,13 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        minHeight: '70vh'
-    },
-    image: {
-        height: 80,
-        width: 150,
-        marginBottom: 30
+        marginTop: 20
     },
     title: {
         fontWeight: "bold",
         marginBottom: 2
     },
     input: {
-        width: "70%",
         borderRadius: 3,
         height: 40,
         marginBottom: 20
@@ -47,7 +42,8 @@ class ViewVerifyScreen extends Component {
             loading: false,
             error: false,
             message: "",
-            isLoggedIn: false
+            isLoggedIn: false,
+            numbers: []
         }
         this.recaptcha = React.createRef();
     }
@@ -71,12 +67,26 @@ class ViewVerifyScreen extends Component {
         });
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.numbers !== this.props.numbers) {
+            this.setState({ numbers: this.props.numbers });
+        }
+    }
+
+    onChange = (value) => {
+        this.setState({ phone: value });
+    }
+
+    onSearch = (val) => {
+        console.log('search:', val);
+    }
+
     sendOtpHandler = (e) => {
         e.preventDefault();
         const { phone } = this.state;
         let appVerifier = window.recaptchaVerifier;
         this.setState({ loading: true });
-        const phoneNumber = phone.includes("+91") ? phone : "+91" + phone;
+        const phoneNumber = phone;
         firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
             .then((result) => {
                 console.log(result);
@@ -97,14 +107,15 @@ class ViewVerifyScreen extends Component {
         const { otp, confirmResult, phone } = this.state;
         confirmResult.confirm(otp).then((result) => {
             this.setState({ user: result.user, uid: result.user.uid, loading: true, error: false });
-
+            this.props.history.push(`/gst-listing/${this.props.pan_no}`);
         }).catch(err => {
-            this.setState({ loading: false, error: true, message: "Invalid OTP!" });
+            console.log(err)
+            // this.setState({ loading: false, error: true, message: "Invalid OTP!" });
         })
     }
 
     disabledPhoneHandler = () => {
-        return this.state.phone.length === 10;
+        return this.state.phone;
     }
 
     disabledOtpHandler = () => {
@@ -120,40 +131,25 @@ class ViewVerifyScreen extends Component {
 
         return (
             <>
-                <PageHeader
-                    className="site-page-header"
-                    onBack={() => { this.props.history.goBack() }}
-                    title="Contact Verification"
-                />
                 <div style={styles.view}>
-                    <img src={require('../Assets/logo.jpg')} style={styles.image} alt="Dollar Industries Ltd." />
-                    <div style={{ display: "flex", justifyContent: "center" }} ref={(ref) => this.recaptcha = ref}></div>
-                    <Text style={styles.title}>Name</Text>
-                    <Input
-                        style={styles.input}
-                        suffix={name === "" ? "" : "Edit"}
-                        value={name}
-                        onChange={event => this.setState({ name: event.target.value.toUpperCase() })}
-                        placeholder="Enter Name"
-                    />
+                    <div ref={(ref) => this.recaptcha = ref}></div>
+
                     <Text style={styles.title}>Phone Number</Text>
-                    <Input
-                        style={styles.input}
-                        prefix={phone.includes("+91") ? null : "+91"}
-                        suffix={phone === "" ? "" : "Edit"}
-                        value={phone}
-                        placeholder="Enter 10 digit phone number"
-                        onChange={event => this.setState({ phone: event.target.value })} />
-
-                    <Text style={styles.title}>Email Id</Text>
-                    <Input
-                        style={styles.input}
-                        suffix={email === "" ? "" : "Edit"}
-                        value={email}
-                        onChange={event => this.setState({ email: event.target.value })}
-                        placeholder="Enter valid Email Id"
-                    />
-
+                    <Select
+                        showSearch
+                        style={{ width: "100%", marginTop: 15, marginBottom: 15 }}
+                        placeholder="Select your GSTN"
+                        optionFilterProp="children"
+                        onChange={this.onChange}
+                        onSearch={this.onSearch}
+                        filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                    >
+                        {this.props.numbers.length > 0 && this.props.numbers.map(item => {
+                            return <Option value={item.value}>{item.data}</Option>;
+                        })}
+                    </Select>
                     {phoneEntered &&
                         <>
                             <Text style={styles.title}>OTP</Text>
