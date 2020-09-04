@@ -1,1 +1,1 @@
-exports.apiUrl = "http://localhost:5000";
+exports.apiUrl = "https://api.dollarvendorapp.com/";

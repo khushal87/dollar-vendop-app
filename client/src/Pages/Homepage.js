@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import TextInput from '../Components/TextInput';
 import CustomButton from '../Components/Button';
 import Prompt from '../Components/Prompt';
 import Axios from 'axios';
+import { message } from 'antd';
 
 
 function Homepage(props) {
@@ -28,6 +29,10 @@ function Homepage(props) {
         }
     }
 
+    const onError = () => {
+        return message.error("Please check your internet connection");
+    }
+
     const onSubmitHandler = () => {
         Axios.get(`/vendors/get-vendors-by-pan/${pan_no}`)
             .then(res => {
@@ -38,6 +43,8 @@ function Homepage(props) {
                 else {
                     setVisible(true);
                 }
+            }).catch((err) => {
+                onError();
             })
     }
 
@@ -86,4 +93,4 @@ function Homepage(props) {
     )
 }
 
-export default Homepage;
+export default memo(Homepage);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Input, Typography } from 'antd';
 
 const { Text } = Typography;
@@ -34,4 +34,4 @@ function TextInput(props) {
     )
 }
 
-export default TextInput;
+export default memo(TextInput);

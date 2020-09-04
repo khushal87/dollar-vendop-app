@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from 'antd';
 
 function CustomButton(props) {
@@ -23,4 +23,4 @@ function CustomButton(props) {
     )
 }
 
-export default CustomButton;
+export default memo(CustomButton);

@@ -17,9 +17,9 @@ function App({ watch, settings }) {
   const { latitude, longitude, error } = usePosition(watch, settings);
   const [vendorData, setVendorData] = useState(null);
 
-  if (error) {
-    alert("Please allow your location to access.");
-  }
+  // if (error) {
+  //   alert("Please allow your location to access.");
+  // }
 
   useEffect(() => {
     if (latitude && longitude) {

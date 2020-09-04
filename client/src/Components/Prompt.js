@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Modal } from 'antd';
 
 function Prompt(props) {
@@ -40,4 +40,4 @@ function Prompt(props) {
     );
 }
 
-export default Prompt;
+export default memo(Prompt);

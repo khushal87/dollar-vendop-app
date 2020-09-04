@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, memo } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
-import { Input, Typography, PageHeader, Spin } from 'antd';
+import { Input, Typography, PageHeader, Spin, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import CustomButton from '../Components/Button';
+import { VendorContext } from '../Context/vendorContext';
 
 const { Text } = Typography;
 
@@ -35,6 +36,7 @@ const styles = {
 
 
 class PhoneVerification extends Component {
+    static contextType = VendorContext;
     constructor(props) {
         super(props);
         this.state = {
@@ -75,6 +77,14 @@ class PhoneVerification extends Component {
         });
     }
 
+    successOtpSent = () => {
+        message.success('OTP Sent on your entered Mobile Number!');
+    }
+
+    success = () => {
+        message.success('Contact Details Submitted Successfully');
+    };
+
     sendOtpHandler = (e) => {
         e.preventDefault();
         const { phone } = this.state;
@@ -90,6 +100,7 @@ class PhoneVerification extends Component {
                     message: "OTP is sent on your mobile number."
                 });
                 this.setState({ loading: false });
+                this.successOtpSent();
             })
             .catch(error => {
                 console.log(error);
@@ -108,6 +119,8 @@ class PhoneVerification extends Component {
             })
                 .then(async (res) => {
                     this.setState({ loading: false, isLoggedIn: true });
+                    this.success();
+                    this.context.setVendorData(res.data.vendor);
                 })
                 .catch(err => {
                     console.log(err);
@@ -196,4 +209,4 @@ class PhoneVerification extends Component {
 }
 
 
-export default PhoneVerification;
+export default memo(PhoneVerification);

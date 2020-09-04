@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { PageHeader, Typography, Select, Table, Spin } from 'antd';
+import React, { useEffect, useState, memo } from 'react';
+import { PageHeader, Typography, Select, Table, Spin, message } from 'antd';
 import { CheckCircleTwoTone, ExclamationCircleTwoTone } from '@ant-design/icons'
 import Axios from 'axios';
 import CustomButton from '../Components/Button';
@@ -15,6 +15,10 @@ function GstListScreen(props) {
     const [loading, setLoading] = useState(false);
     const { setVendorData } = useVendorContext();
 
+    const onError = () => {
+        return message.error("Please check your internet connection");
+    }
+
     useEffect(() => {
         setLoading(true)
         Axios.get(`/vendors/get-vendors-by-pan/${props.match.params.id}`)
@@ -24,6 +28,7 @@ function GstListScreen(props) {
                 setLoading(false);
             })
             .catch((err) => {
+                onError();
                 console.log(err);
             })
     }, [props.match.params.id]);
@@ -110,10 +115,18 @@ function GstListScreen(props) {
         },
     ]
 
+    let content;
     if (loading) {
-        return <div style={{ textAlign: "center", marginTop: 20 }}>
+        content = <div style={{ textAlign: "center", marginTop: 20 }}>
             <Spin size="large" />
         </div>
+    }
+    else {
+        content = <>{filter_data.length !== 0 ?
+            <><Text type="warning">{filter_data.length} {filter_data.length > 1 ? "entries" : "entry"} found.</Text><br /></>
+            : null}
+            <Table columns={columns} dataSource={filter_data} scroll={{ x: 500 }} size="small" />
+        </>
     }
 
     return (
@@ -143,10 +156,7 @@ function GstListScreen(props) {
                     })}
                 </Select>
                 <br />
-                {filter_data.length !== 0 ?
-                    <><Text type="warning">{filter_data.length} {filter_data.length > 1 ? "entries" : "entry"} found.</Text><br /></>
-                    : null}
-                <Table columns={columns} dataSource={filter_data} scroll={{ x: 500 }} size="small" />
+                {content}
                 {/* <List
                     itemLayout="horizontal"
                     dataSource={filter_data}
@@ -164,4 +174,4 @@ function GstListScreen(props) {
     )
 }
 
-export default GstListScreen;
+export default memo(GstListScreen);

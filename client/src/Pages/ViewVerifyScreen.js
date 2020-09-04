@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, memo } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
 import { Input, Typography, PageHeader, Spin } from 'antd';
@@ -181,4 +181,4 @@ class ViewVerifyScreen extends Component {
 }
 
 
-export default ViewVerifyScreen;
+export default memo(ViewVerifyScreen);

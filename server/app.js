@@ -6,7 +6,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const createError = require('http-errors');
 const multer = require('multer');
-
+const cors = require('cors');
 const constants = require('./config/dev');
 
 //App Routes
@@ -20,6 +20,7 @@ const noPanDataRoutes = require('./Routes/noPanData');
 
 //App initialization
 const app = express();
+app.use(cors())
 
 
 const fileStorage = multer.diskStorage({
@@ -74,17 +75,22 @@ app.use(cookieParser());
 
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
+// app.use(express.static(path.join(__dirname, "../", "client", "build")));
 
 //To set cors header
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,PATCH,DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-    next();
-})
+// app.use((req, res, next) => {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+//     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,PATCH,DELETE');
+//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+//     next();
+// })
 
 app.use('/vendors', vendorRoutes);
 app.use('/nopandata', noPanDataRoutes);
+
+// app.use("/", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../", "client", "build", "index.html"));
+// })
 
 
 //Handling error and response

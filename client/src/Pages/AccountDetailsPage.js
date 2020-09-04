@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { PageHeader, Select, Typography, message } from 'antd';
 import TextInput from '../Components/TextInput';
 import CustomButton from '../Components/Button';
@@ -7,7 +7,6 @@ import { useVendorContext } from '../Context/vendorContext';
 
 const { Option } = Select;
 const { Text } = Typography;
-
 
 
 function OthersDetails(props) {
@@ -20,11 +19,15 @@ function OthersDetails(props) {
     const [bank_ifsc, setBankIFSC] = useState("");
     const { vendorData, setVendorData } = useVendorContext();
 
+    const onNoInternet = () => {
+        return message.error("Please check your internet connection");
+    }
+
     useEffect(() => {
         if (vendorData) {
             const {
                 accounts_head_name, accounts_head_email, accounts_head_mobile,
-                bank_account_no, bank_account_type, bank_name, bank_ifsc, pan_no, gst_no
+                bank_account_no, bank_account_type, bank_name, bank_ifsc
             } = vendorData;
             setAccountHeadEmail(accounts_head_email);
             setAccountHeadMobile(accounts_head_mobile);
@@ -52,6 +55,7 @@ function OthersDetails(props) {
                 })
                 .catch((err) => {
                     console.log(err);
+                    onNoInternet();
                 })
         }
     }, []);
@@ -88,11 +92,11 @@ function OthersDetails(props) {
 
 
     const success = () => {
-        message.success('Form Submitted Successfully');
+        message.success('Account Details Submitted Successfully');
     };
 
     const error = () => {
-        message.error('This is an error message');
+        message.error('Something went wrong.');
     };
 
     const disabledHandler = () => {
@@ -199,4 +203,4 @@ function OthersDetails(props) {
     )
 }
 
-export default OthersDetails;
+export default memo(OthersDetails);

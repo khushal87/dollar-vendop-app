@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { PageHeader, Select, Typography, Radio, DatePicker, message } from 'antd';
 import TextInput from '../Components/TextInput';
 import states from '../Defaults/state';
@@ -27,6 +27,14 @@ function OrganizationDetails(props) {
     const [phone_number, setPhoneNumber] = useState("");
     const [contact_person_name, setContactPersonName] = useState("");
     const { vendorData, setVendorData } = useVendorContext();
+
+    const onNoInternet = () => {
+        return message.error("Please check your internet connection");
+    }
+
+    const onNoVendor = () => {
+        return message.error("Invalid Vendor Id");
+    }
 
     useEffect(() => {
         if (vendorData) {
@@ -103,6 +111,13 @@ function OrganizationDetails(props) {
                 })
                 .catch((err) => {
                     console.log(err);
+                    if (err.response) {
+                        if (err.response.data.message !== "") {
+                            onNoVendor();
+                        }
+                    } else {
+                        onNoInternet();
+                    }
                 })
         }
 
@@ -159,7 +174,7 @@ function OrganizationDetails(props) {
     }
 
     const success = () => {
-        message.success('Form Submitted Successfully');
+        message.success('Organization Details Submitted Successfully');
     };
 
     const error = () => {
@@ -311,4 +326,4 @@ function OrganizationDetails(props) {
     )
 }
 
-export default OrganizationDetails;
+export default memo(OrganizationDetails);

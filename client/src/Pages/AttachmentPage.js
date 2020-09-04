@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { PageHeader, Typography, message, Button } from 'antd';
+import React, { useState, useEffect, memo } from 'react';
+import { PageHeader, Typography, message, Spin } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import CustomButton from '../Components/Button';
 import Axios from 'axios';
@@ -18,6 +18,7 @@ function AttachmentPage(props) {
     const [gst_no, setGSTNo] = useState("");
     const [msme_reg_no, setMSMERegNo] = useState("");
     const [is_msme, setIsMSME] = useState("N");
+    const [loading, setLoading] = useState(false);
 
     const { vendorData, setVendorData } = useVendorContext();
 
@@ -88,6 +89,7 @@ function AttachmentPage(props) {
     }
 
     const onSubmitHandler = () => {
+        setLoading(true);
         const formData = new FormData();
         formData.append('pan_attachment', pan_attachment);
         formData.append('gst_attachment', gst_attachment);
@@ -113,11 +115,13 @@ function AttachmentPage(props) {
                     pan_no: pan_no
                 }).then((res) => {
                     onSuccess();
+                    setLoading(false);
                     props.history.push(`/summary-form/${props.match.params.id}`)
                 })
             })
             .catch((error) => {
                 console.log(error);
+                setLoading(false);
                 onError();
             })
     }
@@ -203,9 +207,12 @@ function AttachmentPage(props) {
                     disabled={!disabledHandler()}
                     onClick={onSubmitHandler}
                 />
+                {loading && <div style={{ textAlign: "center", marginTop: 15 }}>
+                    <Spin size="large" />
+                </div>}
             </div>
         </>
     )
 }
 
-export default AttachmentPage;
+export default memo(AttachmentPage);

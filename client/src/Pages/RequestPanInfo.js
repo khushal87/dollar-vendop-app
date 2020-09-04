@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 
 import {
     Typography,
@@ -146,4 +146,4 @@ const RequestPanInfo = (props) => {
     );
 };
 
-export default RequestPanInfo;
+export default memo(RequestPanInfo);

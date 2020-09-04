@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Typography, PageHeader, Button } from 'antd';
+import React, { useEffect, useState, memo } from 'react';
+import { Typography, PageHeader, message } from 'antd';
 import { useVendorContext } from '../Context/vendorContext';
 import Axios from 'axios';
 import moment from 'moment';
 import CustomButton from '../Components/Button';
 import { QRCode } from 'react-qr-svg';
+import { apiUrl } from '../config';
 
 const { Text } = Typography;
 
@@ -12,6 +13,15 @@ function SummaryForm(props) {
     const [vendor, setVendor] = useState({});
     const [print, setPrint] = useState(false);
     const { vendorData } = useVendorContext();
+
+    const onError = () => {
+        return message.error("Please check your internet connection");
+    }
+
+    const onNoVendor = () => {
+        return message.error("Invalid Vendor Id");
+    }
+
     useEffect(() => {
         if (vendorData) {
             setVendor(vendorData);
@@ -22,7 +32,12 @@ function SummaryForm(props) {
                     setVendor(result.data.vendor);
                 })
                 .catch((err) => {
-                    console.log(err);
+                    if (err.response) {
+                        if (err.response.data.message === "Could not find vendor.")
+                            onNoVendor();
+                    }
+                    else
+                        onError()
                 })
         }
     }, [vendorData]);
@@ -66,7 +81,7 @@ function SummaryForm(props) {
                 onBack={print ? () => { props.history.goBack() } : null}
                 title="Vendor Summary"
                 extra={[
-                    <img style={styles.image} src={require('../Assets/logo.jpg')} />
+                    <img style={styles.image} src={require('../Assets/logo.jpg')} alt="dollar" />
                 ]}
             />
             <div style={styles.view}>
@@ -75,7 +90,7 @@ function SummaryForm(props) {
                 <QRCode
                     level="Q"
                     style={{ width: 130, position: "absolute", right: 10, marginTop: 100 }}
-                    value={`http://www.localhost:5000/summary-form/${props.match.params.id}`}
+                    value={`${apiUrl}/summary-form/${props.match.params.id}`}
                 />
                 <br />
                 <Text><Text style={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Name</Text> - {vendor.name}</Text>
@@ -121,7 +136,7 @@ function SummaryForm(props) {
                 <Text><Text style={{ fontWeight: "bold" }}>GST</Text> - {vendor.gst_attachment && vendor.gst_attachment.substr(7)}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>MSME</Text> - {vendor.msme_attachment && vendor.msme_attachment.substr(7)}</Text>
                 <Text><Text style={{ fontWeight: "bold" }}>Bank</Text> - {vendor.bank_cancelled_cheque && vendor.bank_cancelled_cheque.substr(7)}</Text>
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
                     <CustomButton
                         type="primary"
                         title="Print"
@@ -146,7 +161,7 @@ function SummaryForm(props) {
                                 navigator.share({
                                     title: `Dollar Vendor ${vendor._id}`,
                                     text: "Find the most hygienic places near you",
-                                    url: `http://www.localhost:5000/summary-form/${props.match.params.id}`
+                                    url: `${apiUrl}/summary-form/${props.match.params.id}`
                                 })
                                     .then(() => console.log("Successful Share"))
                                     .catch(error => console.log("Error sharing application", error));
@@ -159,4 +174,4 @@ function SummaryForm(props) {
     )
 }
 
-export default SummaryForm;
+export default memo(SummaryForm);
