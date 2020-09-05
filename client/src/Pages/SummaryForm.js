@@ -161,7 +161,7 @@ function SummaryForm(props) {
                                 navigator.share({
                                     title: `Dollar Vendor ${vendor._id}`,
                                     text: "Find the most hygienic places near you",
-                                    url: `${apiUrl}/summary-form/${props.match.params.id}`
+                                    url: `${"https://wwww.dollarvendorapp.com"}/summary-form/${props.match.params.id}`
                                 })
                                     .then(() => console.log("Successful Share"))
                                     .catch(error => console.log("Error sharing application", error));

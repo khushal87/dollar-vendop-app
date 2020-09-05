@@ -24,5 +24,6 @@ Router.delete('/delete-all-vendors', vendorController.deleteAllVendors);
 Router.get('/confirm-email/:token', vendorController.confirmEmail);
 Router.post('/send-email/:id', vendorController.sendEmail);
 Router.put('/confirm-phone/:id', vendorController.confirmPhone);
+Router.get('/phone-confirmation/:id', vendorController.phoneVerification);
 
 module.exports = Router;

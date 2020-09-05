@@ -1,9 +1,10 @@
 import React, { Component, memo } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
-import { Input, Typography, PageHeader, Spin, Select } from 'antd';
+import { Input, Typography, PageHeader, Spin, Select, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import CustomButton from '../Components/Button';
+import { AuthContext } from '../Context/AuthContext';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -30,6 +31,7 @@ const styles = {
 
 
 class ViewVerifyScreen extends Component {
+    static contextType = AuthContext;
     constructor(props) {
         super(props);
         this.state = {
@@ -103,11 +105,23 @@ class ViewVerifyScreen extends Component {
             });
     }
 
+    onError = () => {
+        message.error("Please enter a valid PAN");
+    }
+
     verifyResult = () => {
         const { otp, confirmResult, phone } = this.state;
         confirmResult.confirm(otp).then((result) => {
             this.setState({ user: result.user, uid: result.user.uid, loading: true, error: false });
-            this.props.history.push(`/gst-listing/${this.props.pan_no}`);
+            Axios.get(`/vendors/phone-confirmation/${this.props.pan_no}`)
+                .then(result => {
+                    this.context.setToken(result.data.token);
+                    localStorage.setItem("userToken", result.data.token);
+                    this.props.history.push(`/gst-listing/${this.props.pan_no}`);
+                })
+                .catch((err) => {
+                    this.onError();
+                })
         }).catch(err => {
             console.log(err)
             // this.setState({ loading: false, error: true, message: "Invalid OTP!" });
@@ -138,7 +152,7 @@ class ViewVerifyScreen extends Component {
                     <Select
                         showSearch
                         style={{ width: "100%", marginTop: 15, marginBottom: 15 }}
-                        placeholder="Select your GSTN"
+                        placeholder="Select your Phone Number"
                         optionFilterProp="children"
                         onChange={this.onChange}
                         onSearch={this.onSearch}

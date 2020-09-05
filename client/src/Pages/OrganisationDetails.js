@@ -26,7 +26,7 @@ function OrganizationDetails(props) {
     const [gst_no, setGSTNo] = useState("");
     const [phone_number, setPhoneNumber] = useState("");
     const [contact_person_name, setContactPersonName] = useState("");
-    const { vendorData, setVendorData } = useVendorContext();
+    const { vendorData, latitude, longitude, setVendorData } = useVendorContext();
 
     const onNoInternet = () => {
         return message.error("Please check your internet connection");
@@ -203,7 +203,9 @@ function OrganizationDetails(props) {
             address_line3,
             state, city,
             pin_code: pincode,
-            turnover: turnover
+            turnover: turnover,
+            latitude,
+            longitude
         }
         Axios.put(`/vendors/update-vendor-organization-details/${props.match.params.id}`, params)
             .then(result => {

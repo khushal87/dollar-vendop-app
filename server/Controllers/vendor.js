@@ -80,6 +80,26 @@ exports.getVendorsByPANCard = (req, res, next) => {
         })
 }
 
+exports.phoneVerification = (req, res, next) => {
+    const pan_no = req.params.id;
+    Vendor.find({ pan_no: pan_no })
+        .then((vendors) => {
+            if (vendors.length === 0) {
+                res.status(500).json({ message: "No vendors found" });
+            }
+            else {
+                const token = jwt.sign({ pan_no: pan_no }, 'thedollarappcredentials', { expiresIn: "24h" });
+                res.status(200).json({ token: token });
+            }
+        })
+        .catch((err) => {
+            if (!err.status) {
+                err.status = 500;
+            }
+            next(err);
+        })
+}
+
 exports.getVendorsByPANAndGST = (req, res, next) => {
     const gstNumber = req.body.gst_no;
     const query = {
@@ -147,6 +167,7 @@ exports.createVendor = (req, res, next) => {
         address_line1,
         address_line2,
         address_line3,
+        latitude, longitude,
         city, state, pin_code,
         is_msme, msme_reg_no, msme_valid_from, turnover,
         bank_ifsc, bank_account_type, bank_name, bank_account_no,
@@ -172,6 +193,7 @@ exports.createVendor = (req, res, next) => {
         pin_code,
         is_msme,
         turnover,
+        latitude, longitude,
         msme_reg_no, msme_valid_from,
         bank_ifsc, bank_account_type, bank_name, bank_account_no,
         accounts_head_mobile, accounts_head_email, accounts_head_name,
@@ -234,7 +256,8 @@ exports.updateOrganizationDetails = (req, res, next) => {
         address_line3,
         city,
         state,
-        pin_code
+        pin_code,
+        latitude, longitude,
     } = req.body;
     Vendor.findById(vendorId)
         .then((vendor) => {
@@ -254,6 +277,8 @@ exports.updateOrganizationDetails = (req, res, next) => {
             vendor.is_msme = is_msme;
             vendor.msme_reg_no = msme_reg_no;
             vendor.msme_valid_from = msme_valid_from;
+            vendor.latitude = latitude;
+            vendor.longitude = longitude;
             return vendor.save();
         }).then((result) => {
             res.status(200).send({ message: "Vendor organization details updated successfully!", vendor: result });

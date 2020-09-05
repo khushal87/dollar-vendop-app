@@ -5,6 +5,7 @@ import Prompt from '../Components/Prompt';
 import Axios from 'axios';
 import { message } from 'antd';
 import ViewVerifyScreen from './ViewVerifyScreen';
+import InstallPWA from '../Components/PWAButton';
 
 
 function Homepage(props) {
@@ -111,6 +112,7 @@ function Homepage(props) {
                 handleYes={handleYes}
                 handleNo={handleNo}
             />
+            <InstallPWA />
         </div>
     )
 }
