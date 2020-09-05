@@ -112,7 +112,7 @@ function Homepage(props) {
                 handleYes={handleYes}
                 handleNo={handleNo}
             />
-            <InstallPWA />
+            {/* <InstallPWA /> */}
         </div>
     )
 }
