@@ -1,4 +1,4 @@
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, lazy, Suspense } from 'react';
 
 import {
     Typography,
@@ -6,11 +6,11 @@ import {
     Spin,
     PageHeader
 } from 'antd';
-import TextInput from '../Components/TextInput';
-import CustomButton from '../Components/Button';
 import Axios from 'axios';
 import Prompt from '../Components/Prompt';
 
+const TextInput = lazy(() => import('../Components/TextInput'));
+const CustomButton = lazy(() => import('../Components/Button'));
 
 const { Text } = Typography;
 
@@ -142,31 +142,41 @@ const RequestPanInfo = (props) => {
                             <Text style={styles.head}>
                                 Fill the details below.
                     </Text>
-                            <TextInput
-                                title="Organization Name*"
-                                value={name}
-                                onChange={(text) => { setName(text) }}
-                                autoFocus={true}
-                                placeholder="Enter your Name" />
-                            <TextInput
-                                title="PAN Number*"
-                                value={pan_no}
-                                onChange={(text) => { setPanNo(text.toUpperCase()) }}
-                                placeholder="Enter 10 digit PAN Number" />
-                            <TextInput
-                                title="Mobile*"
-                                value={phone}
-                                onChange={(text) => { setPhone(text) }}
-                                placeholder="Enter 10 digit Mobile Number" />
-                            <TextInput
-                                title="Email*"
-                                value={email}
-                                onChange={(text) => { setEmail(text) }}
-                                placeholder="Enter your Email" />
-                            <CustomButton
-                                disabled={!disabledHandler()}
-                                title={"Submit"}
-                                onClick={onSubmitHandler} />
+                            <Suspense>
+                                <TextInput
+                                    title="Organization Name*"
+                                    value={name}
+                                    onChange={(text) => { setName(text) }}
+                                    autoFocus={true}
+                                    placeholder="Enter your Name" />
+                            </Suspense>
+                            <Suspense>
+                                <TextInput
+                                    title="PAN Number*"
+                                    value={pan_no}
+                                    onChange={(text) => { setPanNo(text.toUpperCase()) }}
+                                    placeholder="Enter 10 digit PAN Number" />
+                            </Suspense>
+                            <Suspense>
+                                <TextInput
+                                    title="Mobile*"
+                                    value={phone}
+                                    onChange={(text) => { setPhone(text) }}
+                                    placeholder="Enter 10 digit Mobile Number" />
+                            </Suspense>
+                            <Suspense>
+                                <TextInput
+                                    title="Email*"
+                                    value={email}
+                                    onChange={(text) => { setEmail(text) }}
+                                    placeholder="Enter your Email" />
+                            </Suspense>
+                            <Suspense>
+                                <CustomButton
+                                    disabled={!disabledHandler()}
+                                    title={"Submit"}
+                                    onClick={onSubmitHandler} />
+                            </Suspense>
                             {loader &&
                                 <div style={{ textAlign: "center" }}>
                                     <Spin size="large" />
@@ -183,7 +193,7 @@ const RequestPanInfo = (props) => {
                             />
                         </> : <Text style={{ textAlign: "center", marginLeft: 20, marginRight: 20 }}>
                             Thank You! Your form is already submitted. If you have provided correct email address and phone number you will be contacted soon.
-                </Text>}
+                            </Text>}
                 </div>}
         </>
     );

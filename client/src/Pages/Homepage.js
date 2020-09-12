@@ -1,11 +1,13 @@
-import React, { useState, memo } from 'react';
-import TextInput from '../Components/TextInput';
-import CustomButton from '../Components/Button';
+import React, { useState, memo, Suspense, lazy } from 'react';
 import Prompt from '../Components/Prompt';
 import Axios from 'axios';
 import { message } from 'antd';
-import ViewVerifyScreen from './ViewVerifyScreen';
-import InstallPWA from '../Components/PWAButton';
+// import InstallPWA from '../Components/PWAButton';
+
+const CustomButton = lazy(() => import('../Components/Button'));
+const TextInput = lazy(() => import('../Components/TextInput'));
+const ViewVerifyScreen = lazy(() => import('./ViewVerifyScreen'));
+const Blink = lazy(() => import('react-blink-text'));
 
 
 function Homepage(props) {
@@ -29,8 +31,8 @@ function Homepage(props) {
             textAlign: "left"
         },
         image: {
-            height: 80,
-            width: 150,
+            height: 138.89,
+            width: 250,
             marginBottom: 30
         }
     }
@@ -91,18 +93,23 @@ function Homepage(props) {
 
     return (
         <div style={styles.view}>
-            <img src={require('../Assets/logo.jpg')} style={styles.image} alt="Dollar Industries Ltd." />
-            <TextInput
-                value={pan_no}
-                onChange={(text) => { setPanNo(text.toUpperCase()) }}
-                title="PAN Number"
-                autoFocus={true}
-                placeholder="Enter your 10 digit PAN number" />
+            <img src={require('../Assets/logo.webp')} style={styles.image} alt="Dollar Industries Ltd." />
+            <Suspense>
+                <TextInput
+                    value={pan_no}
+                    onChange={(text) => { setPanNo(text.toUpperCase()) }}
+                    title="PAN Number"
+                    autoFocus={true}
+                    placeholder="Enter your 10 digit PAN number" />
+            </Suspense>
+
             {statusChecked && <ViewVerifyScreen numbers={phone_numbers} {...props} pan_no={pan_no} />}
-            <CustomButton
-                title={"Submit"}
-                disabled={!disabledHandler() || statusChecked}
-                onClick={onSubmitHandler} />
+            <Suspense>
+                <CustomButton
+                    title={"Submit"}
+                    disabled={!disabledHandler() || statusChecked}
+                    onClick={onSubmitHandler} />
+            </Suspense>
             <Prompt
                 title="Continue"
                 modalTextMain="Are you sure you want to continue?"
@@ -112,6 +119,9 @@ function Homepage(props) {
                 handleYes={handleYes}
                 handleNo={handleNo}
             />
+            <Blink color='#d9534f' text=' Please re-confirm your KYC before 30.09.2020' fontSize='20'>
+                Please re-confirm your KYC before 30.09.2020
+            </Blink>
             {/* <InstallPWA /> */}
         </div>
     )

@@ -1,11 +1,12 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, lazy, Suspense } from 'react';
 import { PageHeader, Select, Typography, Radio, DatePicker, message } from 'antd';
-import TextInput from '../Components/TextInput';
 import states from '../Defaults/state';
-import CustomButton from '../Components/Button';
 import Axios from 'axios';
 import moment from 'moment';
 import { useVendorContext } from '../Context/vendorContext';
+
+const TextInput = lazy(() => import('../Components/TextInput'));
+const CustomButton = lazy(() => import('../Components/Button'));
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -37,90 +38,94 @@ function OrganizationDetails(props) {
     }
 
     useEffect(() => {
-        if (vendorData) {
-            const {
-                type_of_organization,
-                address_line1,
-                address_line2,
-                address_line3,
-                city, state,
-                pin_code,
-                turnover,
-                is_msme,
-                msme_reg_no,
-                msme_valid_from,
-                phone_number,
-                email,
-                contact_person_name,
-                gst_no
-            } = vendorData;
-            const test = states.filter(item => item.TIN == gst_no.substring(0, 2))[0];
-            setTOA(type_of_organization);
-            setTurnOver(turnover);
-            setIsMSME(is_msme);
-            setMSMERegNo(msme_reg_no);
-            setMSMEValidFrom(msme_valid_from);
-            setAddressLine1(address_line1);
-            setAddressLine2(address_line2);
-            setAddressLine3(address_line3);
-            setCity(city);
-            setState(state ? state : test && (test.TIN + "-" + test.State));
-            setPinCode(pin_code);
-            setPhoneNumber(phone_number);
-            setEmail(email);
-            setContactPersonName(contact_person_name);
-            setGSTNo(gst_no);
+        if (latitude && longitude) {
+            if (vendorData) {
+                const {
+                    type_of_organization,
+                    address_line1,
+                    address_line2,
+                    address_line3,
+                    city, state,
+                    pin_code,
+                    turnover,
+                    is_msme,
+                    msme_reg_no,
+                    msme_valid_from,
+                    phone_number,
+                    email,
+                    contact_person_name,
+                    gst_no
+                } = vendorData;
+                const test = states.filter(item => item.TIN == gst_no.substring(0, 2))[0];
+                setTOA(type_of_organization);
+                setTurnOver(turnover);
+                setIsMSME(is_msme);
+                setMSMERegNo(msme_reg_no);
+                setMSMEValidFrom(msme_valid_from);
+                setAddressLine1(address_line1);
+                setAddressLine2(address_line2);
+                setAddressLine3(address_line3);
+                setCity(city);
+                setState(state ? state : test && (test.TIN + "-" + test.State));
+                setPinCode(pin_code);
+                setPhoneNumber(phone_number);
+                setEmail(email);
+                setContactPersonName(contact_person_name);
+                setGSTNo(gst_no);
+            }
+            else {
+                Axios.get(`/vendors/get-vendor/${props.match.params.id}`)
+                    .then((result) => {
+                        const vendorData = result.data.vendor;
+                        const {
+                            type_of_organization,
+                            address_line1,
+                            address_line2,
+                            address_line3,
+                            city, state,
+                            pin_code,
+                            turnover,
+                            is_msme,
+                            msme_reg_no,
+                            msme_valid_from,
+                            email,
+                            phone_number,
+                            contact_person_name,
+                            gst_no
+                        } = vendorData;
+                        const test = states.filter(item => item.TIN == gst_no.substring(0, 2))[0];
+
+                        setTOA(type_of_organization);
+                        setTurnOver(turnover);
+                        setIsMSME(is_msme);
+                        setMSMERegNo(msme_reg_no);
+                        setMSMEValidFrom(msme_valid_from);
+                        setAddressLine1(address_line1);
+                        setAddressLine2(address_line2);
+                        setAddressLine3(address_line3);
+                        setCity(city);
+                        setState(state ? state : test && (test.TIN + "-" + test.State));
+                        setPinCode(pin_code);
+                        setPhoneNumber(phone_number);
+                        setEmail(email);
+                        setContactPersonName(contact_person_name);
+                        setGSTNo(gst_no);
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        if (err.response) {
+                            if (err.response.data.message !== "") {
+                                onNoVendor();
+                            }
+                        } else {
+                            onNoInternet();
+                        }
+                    })
+            }
         }
         else {
-            Axios.get(`/vendors/get-vendor/${props.match.params.id}`)
-                .then((result) => {
-                    const vendorData = result.data.vendor;
-                    const {
-                        type_of_organization,
-                        address_line1,
-                        address_line2,
-                        address_line3,
-                        city, state,
-                        pin_code,
-                        turnover,
-                        is_msme,
-                        msme_reg_no,
-                        msme_valid_from,
-                        email,
-                        phone_number,
-                        contact_person_name,
-                        gst_no
-                    } = vendorData;
-                    const test = states.filter(item => item.TIN == gst_no.substring(0, 2))[0];
-
-                    setTOA(type_of_organization);
-                    setTurnOver(turnover);
-                    setIsMSME(is_msme);
-                    setMSMERegNo(msme_reg_no);
-                    setMSMEValidFrom(msme_valid_from);
-                    setAddressLine1(address_line1);
-                    setAddressLine2(address_line2);
-                    setAddressLine3(address_line3);
-                    setCity(city);
-                    setState(state ? state : test && (test.TIN + "-" + test.State));
-                    setPinCode(pin_code);
-                    setPhoneNumber(phone_number);
-                    setEmail(email);
-                    setContactPersonName(contact_person_name);
-                    setGSTNo(gst_no);
-                })
-                .catch((err) => {
-                    console.log(err);
-                    if (err.response) {
-                        if (err.response.data.message !== "") {
-                            onNoVendor();
-                        }
-                    } else {
-                        onNoInternet();
-                    }
-                })
+            props.history.push('/');
         }
-
     }, [vendorData]);
 
     const styles = {
@@ -263,15 +268,17 @@ function OrganizationDetails(props) {
                     <Radio value={"N"}>No</Radio>
                 </Radio.Group>
                 {is_MSME === "Y" ? <>
-                    <TextInput
-                        value={msme_reg_no}
-                        required={true}
-                        suffix={msme_reg_no ? "Edit" : null}
-                        onChange={(text) => { setMSMERegNo(text.toUpperCase()) }}
-                        title="MSME Registration number"
-                        autoFocus={true}
-                        placeholder="Enter Registration Number"
-                    />
+                    <Suspense>
+                        <TextInput
+                            value={msme_reg_no}
+                            required={true}
+                            suffix={msme_reg_no ? "Edit" : null}
+                            onChange={(text) => { setMSMERegNo(text.toUpperCase()) }}
+                            title="MSME Registration number"
+                            autoFocus={true}
+                            placeholder="Enter Registration Number"
+                        />
+                    </Suspense>
                     <Text style={styles.title}>Valid From<Text type="danger">*</Text></Text>
                     <DatePicker
                         allowClear={false}
@@ -280,48 +287,62 @@ function OrganizationDetails(props) {
                         // format={"DD-MM-YYYY"}
                         onChange={onDateChange} />
                 </> : null}
-                <TextInput
-                    value={address_line1}
-                    required={true}
-                    onChange={(text) => { setAddressLine1(text.toUpperCase()) }}
-                    title="Address line 1"
-                    placeholder="Enter Address line 1"
-                />
-                <TextInput
-                    value={address_line2}
-                    onChange={(text) => { setAddressLine2(text.toUpperCase()) }}
-                    title="Address line 2"
-                    placeholder="Enter Address line 2"
-                />
-                <TextInput
-                    value={address_line3}
-                    onChange={(text) => { setAddressLine3(text.toUpperCase()) }}
-                    title="Address line 3"
-                    placeholder="Enter Address line 3"
-                />
-                <TextInput
-                    value={city}
-                    required={true}
-                    onChange={(text) => { setCity(text.toUpperCase()) }}
-                    title="City"
-                    placeholder="Enter City"
-                />
+                <Suspense>
+                    <TextInput
+                        value={address_line1}
+                        required={true}
+                        onChange={(text) => { setAddressLine1(text.toUpperCase()) }}
+                        title="Address line 1"
+                        placeholder="Enter Address line 1"
+                    />
+                </Suspense>
+                <Suspense>
+                    <TextInput
+                        value={address_line2}
+                        onChange={(text) => { setAddressLine2(text.toUpperCase()) }}
+                        title="Address line 2"
+                        placeholder="Enter Address line 2"
+                    />
+                </Suspense>
+                <Suspense>
+                    <TextInput
+                        value={address_line3}
+                        onChange={(text) => { setAddressLine3(text.toUpperCase()) }}
+                        title="Address line 3"
+                        placeholder="Enter Address line 3"
+                    />
+                </Suspense>
+                <Suspense>
+                    <TextInput
+                        value={city}
+                        required={true}
+                        onChange={(text) => { setCity(text.toUpperCase()) }}
+                        title="City"
+                        placeholder="Enter City"
+                    />
+                </Suspense>
+
                 <Text style={styles.title}>State<Text type="danger">*</Text></Text>
                 <div style={styles.stateView}>
                     <Text style={{ color: "color: rgba(0, 0, 0, 0.65)" }}>{state}</Text>
                 </div>
-                <TextInput
-                    value={pincode}
-                    required={true}
-                    onChange={(text) => { setPinCode(text.toUpperCase()) }}
-                    title="Pin Code"
-                    placeholder="Enter Pin Code"
-                />
-                <CustomButton
-                    title={"Submit"}
-                    disabled={!disabledHandler()}
-                    onClick={onSubmitHandler}
-                />
+                <Suspense>
+                    <TextInput
+                        value={pincode}
+                        required={true}
+                        onChange={(text) => { setPinCode(text.toUpperCase()) }}
+                        title="Pin Code"
+                        placeholder="Enter Pin Code"
+                    />
+                </Suspense>
+                <Suspense>
+                    <CustomButton
+                        title={"Submit"}
+                        disabled={!disabledHandler()}
+                        onClick={onSubmitHandler}
+                    />
+                </Suspense>
+
                 <br />
             </div>
         </>

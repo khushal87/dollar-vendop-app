@@ -1,10 +1,11 @@
-import React, { Component, memo } from 'react';
+import React, { Component, memo, lazy, Suspense } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
 import { Input, Typography, PageHeader, Spin, Select, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import CustomButton from '../Components/Button';
 import { AuthContext } from '../Context/AuthContext';
+
+const CustomButton = lazy(() => import('../Components/Button'));
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -180,8 +181,12 @@ class ViewVerifyScreen extends Component {
                         <div style={{ textAlign: "center" }}>
                             <Spin size="large" />
                         </div> : phoneEntered ?
-                            <CustomButton disabled={!this.disabledOtpHandler()} title="Verify OTP" onClick={this.verifyResult} /> :
-                            <CustomButton disabled={!this.disabledPhoneHandler()} title="Request OTP" onClick={this.sendOtpHandler} />
+                            <Suspense>
+                                <CustomButton disabled={!this.disabledOtpHandler()} title="Verify OTP" onClick={this.verifyResult} />
+                            </Suspense> :
+                            <Suspense>
+                                <CustomButton disabled={!this.disabledPhoneHandler()} title="Request OTP" onClick={this.sendOtpHandler} />
+                            </Suspense>
                     }
                     {error && <h5 style={{ color: "#d9534f", textAlign: "center" }}>{message}</h5>}
                 </div>

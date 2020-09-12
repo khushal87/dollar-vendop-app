@@ -1,0 +1,2 @@
+(this.webpackJsonpclient=this.webpackJsonpclient||[]).push([[1],{211:function(t,e,i){"use strict";i.r(e);var n=i(0),a=i.n(n),o=i(194);e.default=Object(n.memo)((function(t){var e=t.title,i=t.onClick,n=t.disabled,r=t.width,c={borderRadius:20,marginTop:10,color:"white",fontWeight:"bold",width:r||"",marginBottom:20,display:t.print?"none":""};return a.a.createElement(o.a,{className:"commen-btn",type:"primary",style:c,disabled:n,onClick:i},e)}))}}]);
+//# sourceMappingURL=1.2dcf59ce.chunk.js.map

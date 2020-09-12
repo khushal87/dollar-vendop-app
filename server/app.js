@@ -1,26 +1,22 @@
-const { v4: uuidv4 } = require('uuid');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const createError = require('http-errors');
 const multer = require('multer');
 const cors = require('cors');
 const constants = require('./config/dev');
+const { v4: uuidv4 } = require('uuid');
+
 
 //App Routes
 const vendorRoutes = require('./Routes/vendor');
 const noPanDataRoutes = require('./Routes/noPanData');
-// const productRoutes = require('./Routes/product');
-// const authRoutes = require('./Routes/auth');
-// const cartRoutes = require('./Routes/cart');
-// const addressRoutes = require('./Routes/address');
-// const orderRoutes = require('./Routes/order');
+
 
 //App initialization
 const app = express();
-app.use(cors())
+app.use(cors());
 
 
 const fileStorage = multer.diskStorage({
@@ -28,21 +24,7 @@ const fileStorage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: (req, file, cb) => {
-        // if (file.fieldname === "pan_attachment") {
-        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.pan_no + "_" + file.originalname);
-        // }
-        // else if (file.fieldname === "gst_attachment") {
-        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.gst_no + "_" + file.originalname);
-        // }
-        // else if (file.fieldname === "msme_attachment") {
-        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + req.body.msme_reg_no + "_" + file.originalname);
-        // }
-        // else if (file.fieldname === "bank_cancelled_cheque") {
-        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + "cheque_" + file.originalname);
-        // }
-        // else
-        //     cb(null, req.body.company_code + "_" + req.body.vendor_code + "_" + file.originalname);
-        cb(null, file.originalname);
+        cb(null, uuidv4() + "-" + file.originalname);
     },
 });
 
@@ -63,7 +45,9 @@ const fileFilter = (req, file, cb) => {
 //App utilities
 app.use(express.static(path.join(__dirname, 'Public')));
 app.use(bodyParser.urlencoded({ extended: false }));    //x-www-form-urlencoded
-app.use(bodyParser.json());         //application/json
+app.use(bodyParser.json({
+    limit: '50mb', extended: true
+}));         //application/json
 app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fileSize: 15728640 } })
     .fields([
         { name: "pan_attachment", maxCount: 1 },
@@ -75,23 +59,10 @@ app.use(multer({ storage: fileStorage, fileFilter: fileFilter, limits: { fileSiz
 app.use(cookieParser());
 
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
-// app.use(express.static(path.join(__dirname, "../", "client", "build")));
-
-//To set cors header
-// app.use((req, res, next) => {
-//     res.setHeader('Access-Control-Allow-Origin', '*');
-//     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST,PUT,PATCH,DELETE');
-//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-//     next();
-// })
-
 app.use('/vendors', vendorRoutes);
 app.use('/nopandata', noPanDataRoutes);
+app.use('/images', express.static('images'));
 
-// app.use("/", (req, res) => {
-//     res.sendFile(path.join(__dirname, "../", "client", "build", "index.html"));
-// })
 
 
 //Handling error and response

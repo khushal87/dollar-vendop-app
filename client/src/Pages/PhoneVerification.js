@@ -1,10 +1,11 @@
-import React, { Component, memo } from 'react';
+import React, { Component, memo, lazy, Suspense } from 'react';
 import firebase from 'firebase';
 import Axios from 'axios';
 import { Input, Typography, PageHeader, Spin, message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import CustomButton from '../Components/Button';
 import { VendorContext } from '../Context/vendorContext';
+
+const CustomButton = lazy(() => import('../Components/Button'));
 
 const { Text } = Typography;
 
@@ -18,8 +19,8 @@ const styles = {
         minHeight: '70vh'
     },
     image: {
-        height: 80,
-        width: 150,
+        height: 138.89,
+        width: 250,
         marginBottom: 30
     },
     title: {
@@ -57,24 +58,30 @@ class PhoneVerification extends Component {
     }
 
     componentDidMount() {
-        console.log(this.props.location.state)
-        const { email, phone, contact_person_name } = this.props.location.state;
-        this.setState({ email: email, phone: phone.substr(3), name: contact_person_name })
-        firebase.auth().useDeviceLanguage();
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(this.recaptcha, {
-            'size': 'invisible',
-            'callback': function (response) {
-                // reCAPTCHA solved, allow signInWithPhoneNumber.
-                // ...
-            },
-            'expired-callback': function () {
-                // Response expired. Ask user to solve reCAPTCHA again.
-                // ...
-            }
-        });
-        window.recaptchaVerifier.render().then(function (widgetId) {
-            window.recaptchaWidgetId = widgetId;
-        });
+        const { latitude, longitude } = this.context;
+        if (latitude && longitude) {
+            console.log(this.props.location.state)
+            const { email, phone, contact_person_name } = this.props.location.state;
+            this.setState({ email: email, phone: phone.substr(3), name: contact_person_name })
+            firebase.auth().useDeviceLanguage();
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(this.recaptcha, {
+                'size': 'invisible',
+                'callback': function (response) {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                    // ...
+                },
+                'expired-callback': function () {
+                    // Response expired. Ask user to solve reCAPTCHA again.
+                    // ...
+                }
+            });
+            window.recaptchaVerifier.render().then(function (widgetId) {
+                window.recaptchaWidgetId = widgetId;
+            });
+        }
+        else {
+            this.props.history.push('/');
+        }
     }
 
     successOtpSent = () => {
@@ -154,7 +161,7 @@ class PhoneVerification extends Component {
                     title="Contact Verification"
                 />
                 <div style={styles.view}>
-                    <img src={require('../Assets/logo.jpg')} style={styles.image} alt="Dollar Industries Ltd." />
+                    <img src={require('../Assets/logo.webp')} style={styles.image} alt="Dollar Industries Ltd." />
                     <div style={{ display: "flex", justifyContent: "center" }} ref={(ref) => this.recaptcha = ref}></div>
                     <Text style={styles.title}>Name</Text>
                     <Input
@@ -198,8 +205,12 @@ class PhoneVerification extends Component {
                         <div style={{ textAlign: "center" }}>
                             <Spin size="large" />
                         </div> : phoneEntered ?
-                            <CustomButton disabled={!this.disabledOtpHandler()} title="Verify OTP" onClick={this.verifyResult} /> :
-                            <CustomButton disabled={!this.disabledPhoneHandler()} title="Request OTP" onClick={this.sendOtpHandler} />
+                            <Suspense>
+                                <CustomButton disabled={!this.disabledOtpHandler()} title="Verify OTP" onClick={this.verifyResult} />
+                            </Suspense> :
+                            <Suspense>
+                                <CustomButton disabled={!this.disabledPhoneHandler()} title="Request OTP" onClick={this.sendOtpHandler} />
+                            </Suspense>
                     }
                     {error && <h5 style={{ color: "#d9534f", textAlign: "center" }}>{message}</h5>}
                 </div>

@@ -1,0 +1,1 @@
+{"version":3,"sources":["Pages/DownloadData.js"],"names":["DownloadData"],"mappings":"mGAAA,2BAUeA,UARf,WACI,OACI","file":"static/js/23.af6d4560.chunk.js","sourcesContent":["import React from 'react';\r\n\r\nfunction DownloadData() {\r\n    return (\r\n        <h1>\r\n            hey\r\n        </h1>\r\n    )\r\n}\r\n\r\nexport default DownloadData;"],"sourceRoot":""}

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, lazy, Suspense } from 'react';
 import { PageHeader, Typography, message, Spin } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import CustomButton from '../Components/Button';
 import Axios from 'axios';
 import { useVendorContext } from '../Context/vendorContext';
+const CustomButton = lazy(() => import('../Components/Button'));
 
 const { Text } = Typography;
 
@@ -21,45 +21,50 @@ function AttachmentPage(props) {
     const [loading, setLoading] = useState(false);
     const [resultMessage, setResultMessage] = useState("");
 
-    const { vendorData, setVendorData } = useVendorContext();
+    const { vendorData, setVendorData, latitude, longitude } = useVendorContext();
 
     useEffect(() => {
         const data = localStorage.getItem("is_msme");
         setIsMSME(data ? data : "N");
-        if (vendorData) {
-            const {
-                vendor_code,
-                company_code,
-                pan_no,
-                gst_no,
-                msme_reg_no
-            } = vendorData;
-            setVendorCode(vendor_code);
-            setCompanyCode(company_code);
-            setPanNo(pan_no);
-            setGSTNo(gst_no);
-            setMSMERegNo(msme_reg_no);
+        if (latitude && longitude) {
+            if (vendorData) {
+                const {
+                    vendor_code,
+                    company_code,
+                    pan_no,
+                    gst_no,
+                    msme_reg_no
+                } = vendorData;
+                setVendorCode(vendor_code);
+                setCompanyCode(company_code);
+                setPanNo(pan_no);
+                setGSTNo(gst_no);
+                setMSMERegNo(msme_reg_no);
+            }
+            else {
+                Axios.get(`/vendors/get-vendor/${props.match.params.id}`)
+                    .then((result) => {
+                        const vendorData = result.data.vendor;
+                        const {
+                            vendor_code,
+                            company_code,
+                            pan_no,
+                            gst_no,
+                            msme_reg_no
+                        } = vendorData;
+                        setVendorCode(vendor_code);
+                        setCompanyCode(company_code);
+                        setPanNo(pan_no);
+                        setGSTNo(gst_no);
+                        setMSMERegNo(msme_reg_no);
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    })
+            }
         }
         else {
-            Axios.get(`/vendors/get-vendor/${props.match.params.id}`)
-                .then((result) => {
-                    const vendorData = result.data.vendor;
-                    const {
-                        vendor_code,
-                        company_code,
-                        pan_no,
-                        gst_no,
-                        msme_reg_no
-                    } = vendorData;
-                    setVendorCode(vendor_code);
-                    setCompanyCode(company_code);
-                    setPanNo(pan_no);
-                    setGSTNo(gst_no);
-                    setMSMERegNo(msme_reg_no);
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
+            props.history.push('/');
         }
     }, [vendorData]);
 
@@ -214,12 +219,13 @@ function AttachmentPage(props) {
                 </label>
                     <input hidden={true} id="bank" title="Attach" type="file" onChange={fileChangedHandlerBank} />
                     <Text>{bank_cancelled_cheque && bank_cancelled_cheque.name}</Text>
-
-                    <CustomButton
-                        title={"Submit"}
-                        disabled={!disabledHandler()}
-                        onClick={onSubmitHandler}
-                    />
+                    <Suspense>
+                        <CustomButton
+                            title={"Submit"}
+                            disabled={!disabledHandler()}
+                            onClick={onSubmitHandler}
+                        />
+                    </Suspense>
                     {loading && <div style={{ textAlign: "center", marginTop: 15 }}>
                         <Spin size="large" />
                     </div>}

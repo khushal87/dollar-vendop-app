@@ -18,12 +18,13 @@ Router.post('/create-vendors', vendorController.createVendors);     //to add dat
 Router.put('/update-vendor-organization-details/:id', vendorController.updateOrganizationDetails);
 Router.put('/update-vendor-account-details/:id', vendorController.updateAccountDetails);
 Router.put('/update-vendor-attachments/:id', vendorController.updateVendorAttachments);
-Router.put('/copy-vendor', vendorController.copyVendors);
+// Router.put('/copy-vendor', vendorController.copyVendors);
 Router.delete('/delete-vendor/:id', vendorController.deleteVendor);
-Router.delete('/delete-all-vendors', vendorController.deleteAllVendors);
-Router.get('/confirm-email/:token', vendorController.confirmEmail);
-Router.post('/send-email/:id', vendorController.sendEmail);
+// Router.delete('/delete-all-vendors', vendorController.deleteAllVendors);
+// Router.get('/confirm-email/:token', vendorController.confirmEmail);
+// Router.post('/send-email/:id', vendorController.sendEmail);
 Router.put('/confirm-phone/:id', vendorController.confirmPhone);
 Router.get('/phone-confirmation/:id', vendorController.phoneVerification);
+Router.get('/get-vendors-status-true', vendorController.getVendorsStatusTrue);
 
 module.exports = Router;

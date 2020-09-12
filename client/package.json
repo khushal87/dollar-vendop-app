@@ -12,10 +12,12 @@
     "firebase": "^7.19.0",
     "moment": "^2.27.0",
     "react": "^16.13.1",
+    "react-blink-text": "^1.0.5",
     "react-dom": "^16.13.1",
     "react-qr-svg": "^2.2.2",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.3"
+    "react-scripts": "3.4.3",
+    "use-position": "^0.0.7"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -3,12 +3,43 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const Vendor = require('../Models/vendor');
-const { distinct } = require('../Models/vendor');
+const converter = require('json-2-csv');
 
 exports.getVendors = (req, res, next) => {
     Vendor.find()
         .then((vendors) => {
-            res.status(200).json({ message: "Vendors Fetched", vendors: vendors });
+            res.status(200).json({ message: "Vendors Fetched", vendors: vendors.sort((a, b) => b.updatedAt > a.updatedAt) });
+        })
+        .catch((err) => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+}
+
+exports.getVendorsStatusTrue = (req, res, next) => {
+    Vendor.find()
+        .then((vendors) => {
+            res.status(200).json(vendors.filter(item => item.status === true));
+        })
+        .catch((err) => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+}
+
+exports.getVendorsInXLS = (req, res, next) => {
+    Vendor.find()
+        .then((vendors) => {
+            converter.json2csv(vendors, (err, csv) => {
+                if (err) {
+                    throw err;
+                }
+                fs.writeFileSync('vendors.csv', csv);
+            });
         })
         .catch((err) => {
             if (!err.statusCode) {
@@ -129,7 +160,6 @@ exports.createVendors = (req, res, next) => {
     const vendorsData = req.body.data;
     Vendor.insertMany(vendorsData)
         .then((vendors) => {
-            console.log(vendors)
             res.status(200).json({ message: "Vendors added", vendors: vendors });
         })
         .catch((err) => {
@@ -423,74 +453,12 @@ exports.copyDataToMultipleVendors = (req, res, next) => {
                         item.email_confirmed = true;
                         item.phone_confirmed = true;
                         item.status = true;
+                        item.latitude = vendor1.latitude;
+                        item.longitude = vendor1.longitude;
                         return item.save();
                     })
                 })
             res.status(200).send({ message: "Vendor organization details updated successfully!", length: data.length, vendors: data });
-        })
-        .catch(error => {
-            if (!error.statusCode) {
-                error.statusCode = 500;
-            }
-            next(error);
-        })
-}
-
-exports.copyVendors = (req, res, next) => {
-    const source = req.body.source;
-    const target = req.body.target;
-    Vendor.findById(source)
-        .then((vendor1) => {
-            if (!vendor1) {
-                const error = new Error('Could not find source vendor.');
-                error.status = 404;
-                throw error;
-            }
-            if (!vendor1.email_confirmed && !vendor1.phone_confirmed) {
-                const error = new Error('Please verify your source email and phone to proceed.');
-                error.status = 404;
-                throw error;
-            }
-            Vendor.findById(target)
-                .then((vendor2) => {
-                    if (!vendor2) {
-                        const error = new Error('Could not find destination vendor.');
-                        error.status = 404;
-                        throw error;
-                    }
-                    vendor2.phone_number = vendor1.phone_number;
-                    vendor2.email = vendor1.email;
-                    vendor2.type_of_organization = vendor1.type_of_organization;
-                    vendor2.address_type = vendor1.address_type;
-                    vendor2.address_line1 = vendor1.address_line1;
-                    vendor2.address_line2 = vendor1.address_line2;
-                    vendor2.address_line3 = vendor1.address_line3;
-                    vendor2.city = vendor1.city;
-                    vendor2.state = vendor1.state;
-                    vendor2.pin_code = vendor1.pin_code;
-                    vendor2.is_msme = vendor1.is_msme;
-                    vendor2.msme_reg_no = vendor1.msme_reg_no;
-                    vendor2.msme_valid_from = vendor1.msme_valid_from;
-                    vendor2.bank_account_no = vendor1.bank_account_no;
-                    vendor2.bank_account_type = vendor1.bank_account_type;
-                    vendor2.bank_ifsc = vendor1.bank_ifsc;
-                    vendor2.bank_name = vendor1.bank_name;
-                    vendor2.accounts_head_name = vendor1.accounts_head_name;
-                    vendor2.accounts_head_mobile = vendor1.accounts_head_mobile;
-                    vendor2.accounts_head_email = vendor1.accounts_head_email;
-                    vendor2.contact_person_name = vendor1.contact_person_name;
-                    vendor2.pan_attachment = vendor1.pan_attachment;
-                    vendor2.gst_attachment = vendor1.gst_attachment;
-                    vendor2.msme_attachment = vendor1.msme_attachment;
-                    vendor2.bank_cancelled_cheque = vendor1.bank_cancelled_cheque;
-                    vendor2.email_confirmed = true;
-                    vendor2.phone_confirmed = true;
-                    vendor2.status = true;
-                    return vendor2.save();
-                })
-                .then((result) => {
-                    res.status(200).send({ message: "Vendor copied successfully!", vendor: result });
-                })
         })
         .catch(error => {
             if (!error.statusCode) {
@@ -526,89 +494,89 @@ exports.checkIfPanStatusTrue = (req, res, next) => {
         })
 }
 
-exports.sendEmail = (req, res, next) => {
-    const vendorId = req.params.id;
-    const email = req.body.email;
-    Vendor.findById(vendorId)
-        .then(async (vendor) => {
-            if (!vendor) {
-                const error = new Error('Could not find vendor.');
-                error.status = 404;
-                throw error;
-            }
-            if (vendor.email_confirmed) {
-                const error = new Error('Vendor already verified his/her email.');
-                error.status = 404;
-                throw error;
-            }
-            try {
-                const emailToken = jwt.sign({ vendorId: vendorId, email: email }, 'thedollarappcredentials', { expiresIn: "1h" });
-                let transporter = await nodemailer.createTestAccount((err, account) => {
-                    let transporter = nodemailer.createTransport({
-                        service: "Gmail",
-                        auth: {
-                            user: 'hrithik.agarwal87@gmail.com',
-                            pass: 'lifeinnutshell4534',
-                        },
-                    });
-                    const url = `http://localhost:5000/vendors/confirm-email/${emailToken}`;
-                    const mailOptions = {
-                        from: "'Khushal Agarwal' <hrithik.agarwal87@gmail.com>",
-                        to: email,
-                        subject: "Hello from Dollar Industries✔",
-                        text: "Confirm Email",
-                        html: `<h4>Please click on the link to confirm your email: <a href="${url}">${url}</a></h4>`,
-                    }
-                    transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                            return console.log(error);
-                        }
-                        console.log("Message sent: %s", info.messageId);
-                        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-                    })
-                });
-            }
-            catch (error) {
-                console.log(error);
-            }
-        })
-        .then((result) => {
-            res.status(200).send({ message: "Email sent successfully!" });
-        })
-        .catch(error => {
-            if (!error.statusCode) {
-                error.statusCode = 500;
-            }
-            next(error);
-        })
-}
+// exports.sendEmail = (req, res, next) => {
+//     const vendorId = req.params.id;
+//     const email = req.body.email;
+//     Vendor.findById(vendorId)
+//         .then(async (vendor) => {
+//             if (!vendor) {
+//                 const error = new Error('Could not find vendor.');
+//                 error.status = 404;
+//                 throw error;
+//             }
+//             if (vendor.email_confirmed) {
+//                 const error = new Error('Vendor already verified his/her email.');
+//                 error.status = 404;
+//                 throw error;
+//             }
+//             try {
+//                 const emailToken = jwt.sign({ vendorId: vendorId, email: email }, 'thedollarappcredentials', { expiresIn: "1h" });
+//                 let transporter = await nodemailer.createTestAccount((err, account) => {
+//                     let transporter = nodemailer.createTransport({
+//                         service: "Gmail",
+//                         auth: {
+//                             user: 'hrithik.agarwal87@gmail.com',
+//                             pass: 'lifeinnutshell4534',
+//                         },
+//                     });
+//                     const url = `http://localhost:5000/vendors/confirm-email/${emailToken}`;
+//                     const mailOptions = {
+//                         from: "'Khushal Agarwal' <hrithik.agarwal87@gmail.com>",
+//                         to: email,
+//                         subject: "Hello from Dollar Industries✔",
+//                         text: "Confirm Email",
+//                         html: `<h4>Please click on the link to confirm your email: <a href="${url}">${url}</a></h4>`,
+//                     }
+//                     transporter.sendMail(mailOptions, (error, info) => {
+//                         if (error) {
+//                             return console.log(error);
+//                         }
+//                         console.log("Message sent: %s", info.messageId);
+//                         console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+//                     })
+//                 });
+//             }
+//             catch (error) {
+//                 console.log(error);
+//             }
+//         })
+//         .then((result) => {
+//             res.status(200).send({ message: "Email sent successfully!" });
+//         })
+//         .catch(error => {
+//             if (!error.statusCode) {
+//                 error.statusCode = 500;
+//             }
+//             next(error);
+//         })
+// }
 
-exports.confirmEmail = (req, res, next) => {
-    const token = req.params.token;
-    const { vendorId, email } = jwt.verify(token, 'thedollarappcredentials');
-    Vendor.findById(vendorId)
-        .then((vendor) => {
-            if (!vendor) {
-                const error = new Error('Could not find vendor.');
-                error.status = 404;
-                throw error;
-            }
-            if (!vendor.email_confirmed) {
-                vendor.email_confirmed = true;
-                vendor.email = email;
-                return vendor.save();
-            }
-        })
-        .then((result) => {
-            res.status(200).send({ message: "Email confirmed successfully!" });
-        })
-        .catch(error => {
-            if (!error.statusCode) {
-                error.statusCode = 500;
-            }
-            next(error);
-        })
-}
+// exports.confirmEmail = (req, res, next) => {
+//     const token = req.params.token;
+//     const { vendorId, email } = jwt.verify(token, 'thedollarappcredentials');
+//     Vendor.findById(vendorId)
+//         .then((vendor) => {
+//             if (!vendor) {
+//                 const error = new Error('Could not find vendor.');
+//                 error.status = 404;
+//                 throw error;
+//             }
+//             if (!vendor.email_confirmed) {
+//                 vendor.email_confirmed = true;
+//                 vendor.email = email;
+//                 return vendor.save();
+//             }
+//         })
+//         .then((result) => {
+//             res.status(200).send({ message: "Email confirmed successfully!" });
+//         })
+//         .catch(error => {
+//             if (!error.statusCode) {
+//                 error.statusCode = 500;
+//             }
+//             next(error);
+//         })
+// }
 
 exports.confirmPhone = (req, res, next) => {
     const vendorId = req.params.id;
@@ -642,15 +610,15 @@ exports.confirmPhone = (req, res, next) => {
         })
 }
 
-exports.deleteAllVendors = (req, res, next) => {
-    Vendor.deleteMany()
-        .then((result) => {
-            res.status(200).send({ message: "Deleted all vendors succesfully!" });
-        })
-        .catch(error => {
-            if (!error.statusCode) {
-                error.statusCode = 500;
-            }
-            next(error);
-        })
-}
+// exports.deleteAllVendors = (req, res, next) => {
+//     Vendor.deleteMany()
+//         .then((result) => {
+//             res.status(200).send({ message: "Deleted all vendors succesfully!" });
+//         })
+//         .catch(error => {
+//             if (!error.statusCode) {
+//                 error.statusCode = 500;
+//             }
+//             next(error);
+//         })
+// }

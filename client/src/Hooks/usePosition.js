@@ -36,6 +36,7 @@ export const usePosition = (watch = false, settings = defaultSettings) => {
         } else {
             navigator.geolocation.getCurrentPosition(onChange, onError, settings);
         }
+        console.log(watcher)
 
         return () => watcher && navigator.geolocation.clearWatch(watcher);
     }, [

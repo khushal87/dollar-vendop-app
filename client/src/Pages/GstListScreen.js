@@ -1,10 +1,10 @@
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useState, memo, Suspense, lazy } from 'react';
 import { PageHeader, Typography, Select, Table, Spin, message } from 'antd';
 import { CheckCircleTwoTone, ExclamationCircleTwoTone } from '@ant-design/icons'
 import Axios from 'axios';
-import CustomButton from '../Components/Button';
 import { useVendorContext } from '../Context/vendorContext';
 
+const CustomButton = lazy(() => import('../Components/Button'));
 const { Text } = Typography;
 const { Option } = Select;
 
@@ -13,24 +13,29 @@ function GstListScreen(props) {
     const [unique, setUnique] = useState([]);
     const [filter_data, setFilterData] = useState([]);
     const [loading, setLoading] = useState(false);
-    const { setVendorData } = useVendorContext();
+    const { setVendorData, latitude, longitude } = useVendorContext();
 
     const onError = () => {
         return message.error("Please check your internet connection");
     }
 
     useEffect(() => {
-        setLoading(true)
-        Axios.get(`/vendors/get-vendors-by-pan/${props.match.params.id}`)
-            .then((result) => {
-                setData(result.data.vendors);
-                setUnique(result.data.unique);
-                setLoading(false);
-            })
-            .catch((err) => {
-                onError();
-                console.log(err);
-            })
+        setLoading(true);
+        if (latitude && longitude) {
+            Axios.get(`/vendors/get-vendors-by-pan/${props.match.params.id}`)
+                .then((result) => {
+                    setData(result.data.vendors);
+                    setUnique(result.data.unique);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    onError();
+                    console.log(err);
+                })
+        }
+        else {
+            props.history.push('/');
+        }
     }, [props.match.params.id]);
 
     function onChange(value) {
@@ -77,17 +82,20 @@ function GstListScreen(props) {
             render: (text, record) =>
                 filter_data.length >= 1 ? (
                     !record.status ?
-                        <CustomButton {...props}
-                            title="Edit" onClick={() => {
-                                setVendorData(record);
-                                return props.history.push(`/organization-detail-form/${record._id}`)
-                            }} /> :
-                        <CustomButton {...props}
-                            title="View" onClick={() => {
-                                setVendorData(record);
-                                return props.history.push(`/summary-form/${record._id}`)
-                            }} />
-
+                        <Suspense>
+                            <CustomButton {...props}
+                                title="Edit" onClick={() => {
+                                    setVendorData(record);
+                                    return props.history.push(`/organization-detail-form/${record._id}`)
+                                }} />
+                        </Suspense> :
+                        <Suspense>
+                            <CustomButton {...props}
+                                title="View" onClick={() => {
+                                    setVendorData(record);
+                                    return props.history.push(`/summary-form/${record._id}`)
+                                }} />
+                        </Suspense>
                 ) : null,
         },
         {
